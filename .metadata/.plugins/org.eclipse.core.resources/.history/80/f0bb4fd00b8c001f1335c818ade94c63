@@ -1,0 +1,88 @@
+package com.digimart.Servlet;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+import javax.sql.DataSource;
+
+import com.digimart.project.ConnectionProvider;
+@WebServlet({ "/AddAddressServlet" })
+public class AddAddressServlet extends HttpServlet {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response)
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        int userId = (int) session.getAttribute("user_id");
+
+        // Extract address details from request
+        String street = request.getParameter("street");
+        String city = request.getParameter("city");
+        String state = request.getParameter("state");
+        String postalCode = request.getParameter("postal_code");
+        String country = request.getParameter("country");
+
+        int addressId = 0;
+
+        try (Connection conn = ConnectionProvider.getCon()) {
+            // Check if the address already exists for the user
+            String checkAddressQuery = "SELECT address_id FROM Addresses WHERE user_id = ? AND street = ? AND city = ? AND state = ? AND postal_code = ? AND country = ?";
+            PreparedStatement checkAddressStmt = conn.prepareStatement(checkAddressQuery);
+            checkAddressStmt.setInt(1, userId);
+            checkAddressStmt.setString(2, street);
+            checkAddressStmt.setString(3, city);
+            checkAddressStmt.setString(4, state);
+            checkAddressStmt.setString(5, postalCode);
+            checkAddressStmt.setString(6, country);
+            ResultSet addressRs = checkAddressStmt.executeQuery();
+
+            if (addressRs.next()) {
+                // Address already exists
+                addressId = addressRs.getInt("address_id");
+            } else {
+                // Insert new address into Addresses table
+                String insertAddressQuery = "INSERT INTO Addresses (user_id, street, city, state, postal_code, country) VALUES (?, ?, ?, ?, ?, ?)";
+                PreparedStatement insertAddressStmt = conn.prepareStatement(insertAddressQuery, PreparedStatement.RETURN_GENERATED_KEYS);
+                insertAddressStmt.setInt(1, userId);
+                insertAddressStmt.setString(2, street);
+                insertAddressStmt.setString(3, city);
+                insertAddressStmt.setString(4, state);
+                insertAddressStmt.setString(5, postalCode);
+                insertAddressStmt.setString(6, country);
+                insertAddressStmt.executeUpdate();
+                
+                // Get the generated address_id
+                ResultSet generatedKeys = insertAddressStmt.getGeneratedKeys();
+                if (generatedKeys.next()) {
+                    addressId = generatedKeys.getInt(1);
+                } else {
+                    throw new Exception("Failed to create address.");
+                }
+            }
+
+            // Store the address_id in the session for use in the CheckoutServlet
+            session.setAttribute("address_id", addressId);
+
+            // Redirect to the checkout page with success message
+            response.sendRedirect("checkout.jsp?msg=addressAdded");
+        } catch (Exception e) {
+            e.printStackTrace();
+            response.sendRedirect("addAddress.jsp?msg=error");
+        }
+    }
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doPost(request, response);
+	}
+}

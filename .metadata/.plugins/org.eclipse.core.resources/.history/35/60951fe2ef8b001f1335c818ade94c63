@@ -1,0 +1,65 @@
+<%@ page import="com.digimart.project.ConnectionProvider" %>
+<%@ page import="java.sql.*" %>
+<%@ include file="header.jsp" %>
+<%@ page import="java.util.Base64" %>
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <title>Home</title>
+    <link rel="stylesheet" href="../css/home-style.css"> <!-- Include your CSS file for styling -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css"> <!-- Font Awesome -->
+</head>
+<body>
+    <div style="color: white; text-align: center; font-size: 30px;">Home <i class="fa fa-institution"></i></div>
+    <div class="card-container">
+        <%
+            try {
+                String search = request.getParameter("Search");
+                Connection con = ConnectionProvider.getCon();
+                Statement stmt = con.createStatement();
+
+                // Correct the SQL query syntax with proper quotes and escape special characters
+                String query = "SELECT * FROM PRODUCTS WHERE (name LIKE '%" + search + "%' OR category LIKE '%" + search + "%') AND status='Available'";
+                ResultSet rs = stmt.executeQuery(query);
+                
+                // Track if any products were found
+                boolean hasProducts = false;
+
+                while (rs.next()) {
+                    hasProducts = true; // Found at least one product
+        %>
+            <div class="card">
+                <img src="data:image/jpg;base64,<%= Base64.getEncoder().encodeToString(rs.getBytes("image")) %>" alt="Product Image">
+                <h4><%= rs.getString("name") %></h4>
+                <p><strong>Category:</strong> <%= rs.getString("category") %></p>
+                <p><strong>Description:</strong> <%= rs.getString("description") %></p>
+                <p><strong>Available Quantity:</strong> <%= rs.getBigDecimal("available_qty") %> <%= rs.getString("unit") %></p>
+                <p class="price"><i class="fa fa-inr"></i> <%= rs.getBigDecimal("price_per_unit") %></p>
+                <a href="editProduct.jsp?product_id=<%= rs.getInt("product_id") %>" class="add-to-cart">Add to Cart <i class='fas fa-cart-plus'></i></a>
+            </div>
+        <%
+                }
+                
+                if (!hasProducts) {
+        %>
+            <h1 style="color:white; text-align: center;">Nothing to show</h1>
+        <%
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                out.println("<h1 style='color: red; text-align: center;'>Database error: " + e.getMessage() + "</h1>");
+            } catch (Exception e) {
+                e.printStackTrace();
+                out.println("<h1 style='color: red; text-align: center;'>An error occurred: " + e.getMessage() + "</h1>");
+            } catch (SQLException e) {
+                        e.printStackTrace();
+                    }
+        %>
+    </div>
+    <br>
+    <br>
+    <br>
+</body>
+<%@ include file="footer.jsp" %>
+</html>

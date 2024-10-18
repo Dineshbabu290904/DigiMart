@@ -1,0 +1,10 @@
+<%@page import="com.shopping.project.ConnectionProvider"%>
+<%@page import="java.sql.*"%>
+
+<%
+String email = request.getParameter("email");
+String phone = request.getParameter("phone");
+String securityQuestion = request.getParameter("securityQuestion");
+String answer = request.getParameter("answer");
+String newPassword = request.getParameter("newPassword");
+%>

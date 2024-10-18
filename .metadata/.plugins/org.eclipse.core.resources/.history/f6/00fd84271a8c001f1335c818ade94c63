@@ -1,0 +1,60 @@
+package com.digimart.project;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+@WebServlet("/ProcessPaymentServlet")
+public class ProcessPaymentServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        
+        // Retrieve order details from session or request parameters
+        String userId = session.getAttribute("user_id").toString();
+        int orderId = Integer.parseInt(request.getParameter("order_id"));
+        double amount = Double.parseDouble(request.getParameter("amount")); // Example amount
+        String paymentMethod = request.getParameter("payment_method"); // e.g., "Credit Card"
+        
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        String status = "Success"; // Set default payment status
+        
+        try {
+            conn = ConnectionProvider.getCon();
+            
+            // Insert payment record into Transactions table
+            String insertTransactionQuery = "INSERT INTO Transactions (order_id, amount, payment_method, transaction_date, status) VALUES (?, ?, ?, NOW(), ?)";
+            pstmt = conn.prepareStatement(insertTransactionQuery);
+            pstmt.setInt(1, orderId);
+            pstmt.setDouble(2, amount);
+            pstmt.setString(3, paymentMethod);
+            pstmt.setString(4, status);
+            pstmt.executeUpdate();
+
+            // Additional logic to handle payment processing could be added here
+            // E.g., calling a payment gateway API and updating the status based on the response
+            
+            // Redirect to a success page or set a success message in the session
+            response.sendRedirect("paymentSuccess.jsp?msg=Payment successful!");
+        } catch (Exception e) {
+            e.printStackTrace();
+            status = "Failed"; // Update payment status on error
+            
+            // Redirect to an error page or set an error message in the session
+            response.sendRedirect("paymentError.jsp?msg=Payment failed! Try again.");
+        } finally {
+            // Close resources
+            if (pstmt != null) try { pstmt.close(); } catch (Exception ignore) {}
+            if (conn != null) try { conn.close(); } catch (Exception ignore) {}
+        }
+    }
+}

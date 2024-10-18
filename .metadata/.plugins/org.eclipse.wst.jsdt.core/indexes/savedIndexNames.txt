@@ -1,0 +1,9 @@
+INDEX VERSION 1.4+C:\Users\dines\Downloads\ShoppingCart\.metadata\.plugins\org.eclipse.wst.jsdt.core\indexes
+1206174740.index
+1888899298.index
+3435007717.index
+826670353.index
+1004661708.index
+3717016121.index
+709871253.index
+4104617800.index

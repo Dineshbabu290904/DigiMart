@@ -1,0 +1,38 @@
+<%@include file="changeDetailsHeader.jsp"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="com.digimart.project.ConnectionProvider" %>
+<html>
+<head>
+    <link rel="stylesheet" href="css/changeDetails.css">
+    <script src='https://kit.fontawesome.com/a076d05399.js'></script>
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Change Password</title>
+</head>
+<body>
+
+<!-- Display alerts based on conditions -->
+<div id="alerts" class="container mt-4">
+    <h3 class="alert alert-danger <%= request.getAttribute("oldPasswordError") != null ? "" : "d-none" %>" id="oldPasswordError">Your old Password is wrong!</h3>
+    <h3 class="alert alert-danger <%= request.getAttribute("newPasswordMismatch") != null ? "" : "d-none" %>" id="newPasswordMismatch">New password and Confirm password do not match!</h3>
+    <h3 class="alert alert-success <%= request.getAttribute("passwordSuccess") != null ? "" : "d-none" %>" id="passwordSuccess">Password changed successfully!</h3>
+    <h3 class="alert alert-danger <%= request.getAttribute("genericError") != null ? "" : "d-none" %>" id="genericError">Something went wrong! Try again!</h3>
+</div>
+
+<div class="container mt-5">
+    <h3>Enter Old Password</h3>
+    <input type="password" name="oldPassword" class="form-control" required>
+    <hr>
+    
+    <h3>Enter New Password</h3>
+    <input type="password" name="newPassword" class="form-control" required>
+    <hr>
+
+    <h3>Enter Confirm Password</h3>
+    <input type="password" name="confirmPassword" class="form-control" required>
+    <hr>
+
+    <button type="submit" class="btn btn-primary"><i class='far fa-arrow-alt-circle-right'></i> Change Password</button>
+</div>
+
+</body>
+</html>

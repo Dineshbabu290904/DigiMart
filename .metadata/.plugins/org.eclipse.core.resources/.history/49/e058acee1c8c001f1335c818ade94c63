@@ -1,0 +1,62 @@
+package com.digimart.Servlet;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import com.digimart.project.ConnectionProvider;
+
+@WebServlet("/ProcessPaymentServlet")
+public class ProcessPaymentServlet extends HttpServlet {
+    private static final long serialVersionUID = 1L;
+
+    protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        
+        // Retrieve order_id and amount from session
+        Integer orderId = (Integer) session.getAttribute("order_id");
+        Double amount = (Double) session.getAttribute("amount");
+        String userId = session.getAttribute("user_id").toString();
+        
+        if (orderId == null || amount == null) {
+            response.sendRedirect("errorPage.jsp?msg=Order details not found in session!");
+            return;
+        }
+
+        String paymentMethod = "Cash on Delivery"; // Fixed payment method for COD
+        String status = "Pending"; // Set default payment status
+
+        Connection conn = null;
+        PreparedStatement pstmt = null;
+        
+        try {
+            conn = ConnectionProvider.getCon();
+            
+            // Insert payment record into Transactions table
+            String insertTransactionQuery = "INSERT INTO Transactions (order_id, amount, payment_method, transaction_date, status) VALUES (?, ?, ?, NOW(), ?)";
+            pstmt = conn.prepareStatement(insertTransactionQuery);
+            pstmt.setInt(1, orderId);
+            pstmt.setDouble(2, amount);
+            pstmt.setString(3, paymentMethod);
+            pstmt.setString(4, status);
+            pstmt.executeUpdate();
+
+            // Redirect to a success page or set a success message in the session
+            response.sendRedirect("paymentSuccess.jsp?msg=Order placed successfully! Payment will be collected upon delivery.");
+        } catch (Exception e) {
+            e.printStackTrace();
+            // Redirect to an error page or set an error message in the session
+            response.sendRedirect("paymentError.jsp?msg=Order placement failed! Try again.");
+        } finally {
+            // Close resources
+            if (pstmt != null) try { pstmt.close(); } catch (Exception ignore) {}
+            if (conn != null) try { conn.close(); } catch (Exception ignore) {}
+        }
+    }
+}

@@ -1,0 +1,56 @@
+package com.digimart.Servlet;
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.SQLException;
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import com.digimart.project.ConnectionProvider;
+
+@WebServlet("/RemoveFromCartServlet")
+public class RemoveFromCartServlet extends HttpServlet {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+        int productId = Integer.parseInt(request.getParameter("product_id"));
+        String userId = "1"; // Replace with actual user ID retrieval logic
+
+        try {
+            Connection con = ConnectionProvider.getCon();
+            PreparedStatement ps = con.prepareStatement("DELETE FROM Order_Items WHERE product_id = ? AND order_id IN (SELECT order_id FROM Orders WHERE user_id = ?)");
+            ps.setInt(1, productId);
+            ps.setString(2, userId);
+            int rowsAffected = ps.executeUpdate();
+
+            if (rowsAffected > 0) {
+                // Redirect with a success message
+                response.sendRedirect("myCart.jsp?msg=removed");
+            } else {
+                // Redirect with an error message if no rows were affected
+                response.sendRedirect("myCart.jsp?msg=not_found");
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+            response.sendRedirect("error.jsp"); // Redirect to an error page
+        }
+    }
+}
+
+
+	/**
+	 * @see HttpServlet#doGet(HttpServletRequest request, HttpServletResponse response)
+	 */
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		response.getWriter().append("Served at: ").append(request.getContextPath());
+	}
+
+}

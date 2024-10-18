@@ -1,0 +1,42 @@
+<%@page import="com.shopping.project.ConnectionProvider"%>
+<%@page import="java.sql.*"%>
+
+<%
+String username = request.getParameter("username");
+String email = request.getParameter("email");
+String phone = request.getParameter("phone");
+String securityQuestion = request.getParameter("securityQuestion");
+String answer = request.getParameter("answer");
+String newPassword = request.getParameter("newPassword");
+
+try {
+    Connection con = ConnectionProvider.getCon();
+    PreparedStatement ps = con.prepareStatement("SELECT * FROM Users WHERE username = ? and email = ? and phone = ? and securityQuestion = ? and securityAnswer = ?");
+    ps.setString(1, username);
+	ps.setString(2, email);
+    ps.setString(3, phone);
+    ps.setString(4, securityQuestion);
+    ps.setString(5, answer);
+    ResultSet rs = ps.executeQuery();
+    //System.out.print(rs);
+    if (rs.next()) {
+        PreparedStatement updatePs = con.prepareStatement("UPDATE Users SET password = ? WHERE email = ?");
+        updatePs.setString(1, newPassword); 
+        updatePs.setString(2, email);
+        int rowsUpdated = updatePs.executeUpdate();
+        if (rowsUpdated > 0) {
+            System.out.println("Password updated successfully.");
+            response.sendRedirect("forgotPassword.jsp?msg=done");
+        } else {
+        	System.out.println("Error updating password.");
+        	response.sendRedirect("forgotPassword.jsp?msg=notdone");
+        }
+    } else {
+    	System.out.println("Invalid details provided.");
+    	response.sendRedirect("forgotPassword.jsp?msg=notdone");
+    }
+} catch (Exception e) {
+    e.printStackTrace();
+    System.out.println("Error: " + e.getMessage());
+}
+%>

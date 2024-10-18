@@ -1,0 +1,82 @@
+<%@ page import="java.sql.*, java.io.*" %>
+<%@ page import="javax.servlet.http.*, javax.servlet.*" %>
+<%@ page import="com.shopping.project.ConnectionProvider" %>
+
+<%
+    // Initialize variables for form data
+    String name = request.getParameter("name");
+    String category = request.getParameter("category");
+    String description = request.getParameter("description");
+    String priceStr = request.getParameter("price");
+    String unit = request.getParameter("unit");
+    String availableQtyStr = request.getParameter("available_qty");
+    String status = request.getParameter("status");
+
+    // Initialize variables for the image
+    InputStream inputStream = null;
+    Part filePart = request.getPart("image");
+
+    if (filePart != null) {
+        // Get the input stream of the uploaded file
+        inputStream = filePart.getInputStream();
+    }
+
+    // Convert price and quantity to appropriate data types
+    BigDecimal price = new BigDecimal(priceStr);
+    BigDecimal availableQty = new BigDecimal(availableQtyStr);
+
+    // Database connection and SQL insertion
+    Connection con = null;
+    PreparedStatement ps = null;
+    String message = null;
+
+    try {
+        // Get database connection from your custom connection provider
+        con = ConnectionProvider.getCon();
+
+        // SQL query to insert the product details into the Products table
+        String sql = "INSERT INTO Products (name, category, description, price_per_unit, unit, available_qty, image, status) "
+                   + "VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+
+        // Prepare the statement
+        ps = con.prepareStatement(sql);
+        ps.setString(1, name);
+        ps.setString(2, category);
+        ps.setString(3, description);
+        ps.setBigDecimal(4, price);
+        ps.setString(5, unit);
+        ps.setBigDecimal(6, availableQty);
+
+        if (inputStream != null) {
+            // If an image was uploaded, store it as a BLOB
+            ps.setBlob(7, inputStream);
+        } else {
+            ps.setNull(7, java.sql.Types.BLOB); // Handle case when no image is uploaded
+        }
+
+        ps.setString(8, status);
+
+        // Execute the update
+        int row = ps.executeUpdate();
+
+        if (row > 0) {
+            message = "Product added successfully!";
+        } else {
+            message = "Something went wrong! Try again!";
+        }
+
+    } catch (Exception e) {
+        e.printStackTrace();
+        message = "Error: " + e.getMessage();
+    } finally {
+        // Close resources
+        if (ps != null) ps.close();
+        if (con != null) con.close();
+        if (inputStream != null) inputStream.close();
+    }
+%>
+
+<!-- Display success or error message -->
+<h3 class="alert"><%= message %></h3>
+
+<%@ include file="../footer.jsp" %>

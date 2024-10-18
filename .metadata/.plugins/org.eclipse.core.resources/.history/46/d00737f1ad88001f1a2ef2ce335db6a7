@@ -1,0 +1,24 @@
+<%@page import="com.shopping.project.ConnectionProvider"%>
+<%@page import="java.sql.*"%>
+
+<%
+String name = request.getParameter("name");
+String email = request.getParameter("email");
+String phone = request.getParameter("phone");
+String user_type = request.getParameter("user_type");
+String password = request.getParameter("password");
+try{
+	Connection con = ConnectionProvider.getCon();
+	PreparedStatement P = con.prepareStatement("INSERT INTO Users (name, email, phone, user_type, password, securityQuestion, securityAnswer) VALUES (?, ?, ?, ?, ?, ?, ?)");
+	P.setString(1, name);
+	P.setString(2, email);
+	P.setString(3, phone);
+	P.setString(4, user_type);
+	P.setString(5, password);
+	P.executeUpdate();
+	response.sendRedirect("signup.jsp?msg=valid");
+} catch(Exception e){
+	System.out.println(e);
+	response.sendRedirect("signup.jsp?msg=invalid");
+}
+%>

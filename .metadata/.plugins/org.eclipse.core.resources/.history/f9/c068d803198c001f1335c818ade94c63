@@ -1,0 +1,65 @@
+package com.digimart.Servlet;
+
+
+import java.io.IOException;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+import java.sql.Statement;
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import com.digimart.project.ConnectionProvider;
+
+@WebServlet("/AddAddressServlet")
+public class AddAddressServlet extends HttpServlet {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	// AddAddressServlet.java
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+	    String userId = request.getSession().getAttribute("user_id").toString();
+	    String street = request.getParameter("street");
+	    String city = request.getParameter("city");
+	    String state = request.getParameter("state");
+	    String postalCode = request.getParameter("postal_code");
+	    String country = request.getParameter("country");
+
+	    Connection conn = null;
+	    PreparedStatement pstmt = null;
+
+	    try {
+	        conn = ConnectionProvider.getCon();
+	        String insertAddressQuery = "INSERT INTO Addresses (user_id, street, city, state, postal_code, country) VALUES (?, ?, ?, ?, ?, ?)";
+	        pstmt = conn.prepareStatement(insertAddressQuery, Statement.RETURN_GENERATED_KEYS);
+	        pstmt.setString(1, userId);
+	        pstmt.setString(2, street);
+	        pstmt.setString(3, city);
+	        pstmt.setString(4, state);
+	        pstmt.setString(5, postalCode);
+	        pstmt.setString(6, country);
+	        pstmt.executeUpdate();
+
+	        // Get the generated address_id
+	        ResultSet generatedKeys = pstmt.getGeneratedKeys();
+	        if (generatedKeys.next()) {
+	            int addressId = generatedKeys.getInt(1);
+	            request.getSession().setAttribute("address_id", addressId); // Store address_id in session
+	        }
+
+	        response.sendRedirect("CheckoutServlet?address_id="+addressId);
+	    } catch (SQLException e) {
+	        e.printStackTrace();
+	        response.sendRedirect("viewAddresses.jsp?msg=error");
+	    } finally {
+	        if (pstmt != null) try { pstmt.close(); } catch (SQLException ignore) {}
+	        if (conn != null) try { conn.close(); } catch (SQLException ignore) {}
+	    }
+	}
+}

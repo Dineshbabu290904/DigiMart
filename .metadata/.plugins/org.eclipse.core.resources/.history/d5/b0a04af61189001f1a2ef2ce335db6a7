@@ -1,0 +1,77 @@
+<%@page import="java.sql.*"%>
+<%@page import="com.shopping.project.ConnectionProvider"%>
+<%@page import="java.io.*"%>
+<%@page import="java.io.InputStream"%>
+<%@page import="javax.servlet.http.Part"%>
+<%@page import="java.math.*"%>
+
+<%
+String idParam = request.getParameter("id");
+String name = request.getParameter("name");
+String category = request.getParameter("category");
+String description = request.getParameter("description");
+String priceParam = request.getParameter("price");
+String unit = request.getParameter("unit");
+String available_qtyParam = request.getParameter("available_qty");
+String status = request.getParameter("status");
+
+int id = 0;
+BigDecimal price = BigDecimal.ZERO;
+BigDecimal available_qty = BigDecimal.ZERO;
+InputStream imageInputStream = null;
+
+try {
+    // Parse numeric inputs
+    if (idParam != null && !idParam.isEmpty()) {
+        id = Integer.parseInt(idParam);
+    }
+
+    if (priceParam != null && !priceParam.isEmpty()) {
+        price = new BigDecimal(priceParam);
+    }
+
+    if (available_qtyParam != null && !available_qtyParam.isEmpty()) {
+        available_qty = new BigDecimal(available_qtyParam);
+    }
+
+    // Get image input stream
+    Part imagePart = request.getPart("image");
+    if (imagePart != null && imagePart.getSize() > 0) {
+        imageInputStream = imagePart.getInputStream();
+    }
+
+    // Connect to the database
+    Connection con = ConnectionProvider.getCon();
+    String query = "INSERT INTO Products (product_id, name, category, description, price_per_unit, unit, available_qty, image, status) "
+                 + "VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+    PreparedStatement ps = con.prepareStatement(query);
+    ps.setInt(1, id);
+    ps.setString(2, name);
+    ps.setString(3, category);
+    ps.setString(4, description);
+    ps.setBigDecimal(5, price);
+    ps.setString(6, unit);
+    ps.setBigDecimal(7, available_qty);
+
+    if (imageInputStream != null) {
+        ps.setBlob(8, imageInputStream);
+    } else {
+        ps.setNull(8, java.sql.Types.BLOB);
+    }
+
+    ps.setString(9, status);
+
+    // Execute the query
+    int result = ps.executeUpdate();
+
+    if (result > 0) {
+        response.sendRedirect("addNewProduct.jsp?msg=success");
+    } else {
+        response.sendRedirect("addNewProduct.jsp?msg=error");
+    }
+
+} catch (Exception e) {
+    e.printStackTrace();
+    response.sendRedirect("addNewProduct.jsp?msg=error");
+}
+%>

@@ -1,0 +1,47 @@
+<%@include file="adminHeader.jsp"%>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <title>Welcome</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #4caf50, #a5d6a7); /* Green gradient background */
+            height: 100vh; /* Full viewport height */
+            display: flex; /* Flexbox for centering */
+            flex-direction: column; /* Stack children vertically */
+            margin: 0; /* Remove default margin */
+        }
+        h1 {
+            font-size: 5rem; /* Responsive font size */
+            text-shadow: 2px 2px 4px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+            margin-top: auto; /* Push h1 to the center vertically */
+        }
+        footer {
+            background-color: #4caf50; /* Same green as background */
+            color: white; /* White text */
+            text-align: center; /* Center text */
+            padding: 20px; /* Padding around footer */
+            position: relative; /* For positioning */
+            bottom: 0; /* Stick to bottom */
+            width: 100%; /* Full width */
+        }
+    </style>
+</head>
+<body>
+    <h1>Welcome Admin!</h1>
+
+    <footer>
+        <p>All Rights Reserved &copy; CodeLife</p>
+    </footer>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

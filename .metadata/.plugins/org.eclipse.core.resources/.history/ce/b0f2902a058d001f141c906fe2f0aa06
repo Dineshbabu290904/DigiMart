@@ -1,0 +1,86 @@
+<%@ include file="changeDetailsHeader.jsp" %>
+<%@ page import="java.sql.*" %>
+<%@ page import="com.digimart.project.ConnectionProvider" %>
+<html>
+<head>
+    <link rel="stylesheet" href="css/changeDetails.css">
+    <script src='https://kit.fontawesome.com/a076d05399.js'></script>
+    <title>Change Security Question</title>
+</head>
+<body>
+
+<%
+    // Get userId from session (assuming it's stored there)
+    Integer userId = (Integer) session.getAttribute("user_id");
+
+    if (userId == null) {
+        response.sendRedirect("login.jsp");
+        return;
+    }
+
+    String selectedQuestion = "";
+    
+    // Fetch current security question from the database
+    String query = "SELECT security_question FROM users WHERE user_id = ?";
+    try (Connection con = ConnectionProvider.getCon(); 
+         PreparedStatement stmt = con.prepareStatement(query)) {
+        stmt.setInt(1, userId);
+        ResultSet rs = stmt.executeQuery();
+        if (rs.next()) {
+            selectedQuestion = rs.getString("securityQuestion");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+    }
+%>
+<% 
+    String message = request.getParameter("msg");
+    if ("success".equals(message)) { 
+%>
+    <h3 class="alert alert-success">Your security question has been successfully changed!</h3>
+<% 
+    } else if ("wrongPassword".equals(message)) { 
+%>
+    <h3 class="alert alert-danger">Your password is incorrect!</h3>
+<% 
+    } else if ("error".equals(message)) { 
+%>
+    <h3 class="alert alert-danger">Something went wrong! Please try again.</h3>
+<% 
+    } 
+%>
+
+<h3>Select Your New Security Question</h3>
+
+<hr>
+
+<div class="form-group">
+    <form action="ChangeSecurityQuestionServlet" method="POST">
+        <select class="input-style" name="securityQuestion" class="form-control" required>
+            <option value="What was your first car?" <%= "What was your first car?".equals(selectedQuestion) ? "selected" : "" %>>What was your first car?</option>
+            <option value="What is the name of your first pet?" <%= "What is the name of your first pet?".equals(selectedQuestion) ? "selected" : "" %>>What is the name of your first pet?</option>
+            <option value="What elementary school did you attend?" <%= "What elementary school did you attend?".equals(selectedQuestion) ? "selected" : "" %>>What elementary school did you attend?</option>
+            <option value="What is the name of the town where you were born?" <%= "What is the name of the town where you were born?".equals(selectedQuestion) ? "selected" : "" %>>What is the name of the town where you were born?</option>
+        </select>
+        
+        <hr>
+        
+        <h3>Enter Your New Answer</h3>
+        <input class="input-style" type="text" name="securityAnswer" class="form-control" required>
+        
+        <hr>
+        
+        <h3>Enter Password (For Security)</h3>
+        <input class="input-style" type="password" name="password" class="form-control" required>
+        
+        <hr>
+        <center>
+        <button type="submit" class="btn btn-primary">
+            <i class='far fa-arrow-alt-circle-right'></i> Change Security Question
+        </button>
+        </center>
+    </form>
+</div>
+
+</body>
+</html>

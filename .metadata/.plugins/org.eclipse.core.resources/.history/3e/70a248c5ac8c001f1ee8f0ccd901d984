@@ -1,0 +1,93 @@
+<%@ include file="header.jsp" %>
+<%@ page import="java.sql.*" %>
+<%@ page import="com.digimart.project.ConnectionProvider" %>
+
+<%
+    // Initialize variables
+    Integer userId = (Integer) session.getAttribute("user_id");
+    
+    if (userId == null) {
+        response.sendRedirect("login.jsp"); // Redirect to login if user_id is null
+        return;
+    }
+
+    StringBuilder orderItemsHtml = new StringBuilder();
+
+    // Retrieve order details from the cart and product tables
+    String orderQuery = "SELECT c.quantity, c.price, p.name AS product_name, p.category, " +
+                        "c.added_at AS order_date, a.delivery_date, c.status AS order_status " +
+                        "FROM cart c " +
+                        "JOIN products p ON c.product_id = p.product_id " +
+                        "JOIN address a ON c.user_id = a.user_id " +
+                        "WHERE c.user_id = ? AND c.status IN ('ordered', 'processing')";
+
+    try (Connection con = ConnectionProvider.getCon(); 
+         PreparedStatement orderStmt = con.prepareStatement(orderQuery)) {
+        
+        orderStmt.setInt(1, userId);
+        ResultSet orderRs = orderStmt.executeQuery();
+
+        int serialNo = 1; // Initialize serial number for the order items
+        while (orderRs.next()) {
+            String productName = orderRs.getString("product_name");
+            String category = orderRs.getString("category");
+            double price = orderRs.getDouble("price");
+            int quantity = orderRs.getInt("quantity");
+            double subTotal = price * quantity; // Calculate subtotal
+            String orderDate = orderRs.getString("order_date");
+            String deliveryDate = orderRs.getString("delivery_date");
+            String orderStatus = orderRs.getString("order_status");
+
+            // Create a row in HTML for each order item
+            orderItemsHtml.append("<tr>")
+                          .append("<td>").append(serialNo++).append("</td>")
+                          .append("<td>").append(productName).append("</td>")
+                          .append("<td>").append(category).append("</td>")
+                          .append("<td><i class='fa fa-inr'></i> ").append(price).append("</td>")
+                          .append("<td>").append(quantity).append("</td>")
+                          .append("<td><i class='fa fa-inr'></i> ").append(subTotal).append("</td>")
+                          .append("<td>").append(orderDate).append("</td>")
+                          .append("<td>").append(deliveryDate).append("</td>")
+                          .append("<td>").append(orderStatus).append("</td>")
+                          .append("</tr>");
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        out.println("<h3>An error occurred while retrieving your orders.</h3>");
+        return;
+    }
+%>
+
+<!DOCTYPE html>
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <title>My Orders</title>
+    <link rel="stylesheet" href="css/styles.css"> <!-- Link your CSS file -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.4/css/all.min.css"> <!-- Font Awesome for icons -->
+</head>
+<body>
+<div style="color: white; text-align: center; font-size: 30px;">My Orders <i class='fab fa-elementor'></i></div>
+<table>
+    <thead>
+        <tr>
+            <th scope="col">S.No</th>
+            <th scope="col">Product Name</th>
+            <th scope="col">Category</th>
+            <th scope="col"><i class="fa fa-inr"></i> Price</th>
+            <th scope="col">Quantity</th>
+            <th scope="col"><i class="fa fa-inr"></i> Sub Total</th>
+            <th scope="col">Order Date</th>
+            <th scope="col">Expected Delivery Date</th>
+            <th scope="col">Payment Method</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <!-- Dynamically populated order items -->
+        <%= orderItemsHtml.toString() %>
+    </tbody>
+</table>
+<br><br><br>
+</body>
+</html>

@@ -1,0 +1,131 @@
+<%@ page import="java.sql.*" %>
+<%@ page import="com.digimart.project.ConnectionProvider" %>
+<%
+    // Initialize variables for user details and cart
+    String customerName = "", customerEmail = "", customerMobile = "", streetAddress = "",
+           customerCity = "", customerState = "", customerCountry = "", customerPincode = "";
+    double totalAmount = 0.0;
+    StringBuilder cartItemsHtml = new StringBuilder();
+    int serialNo = 1;
+
+    // Get user ID from session
+    Integer userId = (Integer) session.getAttribute("user_id");
+
+    if (userId == null) {
+        response.sendRedirect("login.jsp"); // Redirect to login if user_id is null
+        return;
+    }
+    customerEmail = (String) session.getAttribute("email"); // Retrieve email from session
+    try (Connection con = ConnectionProvider.getCon()) {
+        // Retrieve address information
+        String addressQuery = "SELECT full_name, phone_number, street_address, city, state, postal_code, country " +
+                              "FROM address WHERE user_id = ? AND is_default = TRUE";
+        try (PreparedStatement addressStmt = con.prepareStatement(addressQuery)) {
+            addressStmt.setInt(1, userId);
+            ResultSet addressRs = addressStmt.executeQuery();
+
+            if (addressRs.next()) {
+                customerName = addressRs.getString("full_name");
+                customerMobile = addressRs.getString("phone_number");
+                streetAddress = addressRs.getString("street_address");
+                customerCity = addressRs.getString("city");
+                customerState = addressRs.getString("state");
+                customerCountry = addressRs.getString("country");
+                customerPincode = addressRs.getString("postal_code");
+            }
+        }
+
+     // Retrieve cart information with product details
+        String cartQuery = "SELECT c.quantity, p.product_name, p.category, p.price " +
+                           "FROM cart c JOIN products p ON c.product_id = p.product_id " +
+                           "WHERE c.user_id = ?";
+        try (PreparedStatement cartStmt = con.prepareStatement(cartQuery)) {
+            cartStmt.setInt(1, userId);
+            ResultSet cartRs = cartStmt.executeQuery();
+
+            while (cartRs.next()) {
+                String productName = cartRs.getString("product_name");
+                String category = cartRs.getString("category");
+                double price = cartRs.getDouble("price");
+                int quantity = cartRs.getInt("quantity");
+                double subTotal = price * quantity;
+
+                totalAmount += subTotal; // Accumulate total amount
+
+                // Create a row in HTML for each cart item
+                cartItemsHtml.append("<tr>")
+                              .append("<td>").append(serialNo++).append("</td>")
+                              .append("<td>").append(productName).append("</td>")
+                              .append("<td>").append(category).append("</td>")
+                              .append("<td>").append(price).append("</td>")
+                              .append("<td>").append(quantity).append("</td>")
+                              .append("<td>").append(subTotal).append("</td>")
+                              .append("</tr>");
+            }
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        out.println("<h3>An error occurred while retrieving your bill.</h3>");
+        return;
+    }
+%>
+
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="css/bill.css">
+    <title>Bill</title>
+</head>
+<body>
+
+<h3>Online Shopping Bill (BTech Days)</h3>
+<hr>
+
+<!-- Address Information -->
+<div class="left-div"><h3>Name: </h3><p><%= customerName %></p></div>
+<div class="right-div-right"><h3>Email: </h3><p><%= customerEmail %></p></div>
+<div class="right-div"><h3>Mobile Number: </h3><p><%= customerMobile %></p></div>
+
+<div class="left-div"><h3>Order Date: </h3><p><%= new java.util.Date() %></p></div>
+<div class="right-div-right"><h3>Payment Method: </h3><p>Cash on Delivery</p></div>
+<div class="right-div"><h3>Expected Delivery: </h3><p><%= new java.text.SimpleDateFormat("yyyy-MM-dd").format(new java.util.Date(System.currentTimeMillis() + 7 * 24 * 60 * 60 * 1000)) %></p></div>
+
+<div class="left-div"><h3>Transaction Id: </h3><p>TXN123456789</p></div>
+<div class="right-div-right"><h3>City: </h3><p><%= customerCity %></p></div>
+<div class="right-div"><h3>Address: </h3><p><%= streetAddress %></p></div>
+
+<div class="left-div"><h3>State: </h3><p><%= customerState %></p></div>
+<div class="right-div-right"><h3>Country: </h3><p><%= customerCountry %></p></div>
+<div class="right-div"><h3>Pincode: </h3><p><%= customerPincode %></p></div>
+
+<hr>
+
+<br>
+
+<!-- Product Details Table -->
+<table id="customers">
+    <h3>Product Details</h3>
+    <tr>
+        <th>S.No</th>
+        <th>Product Name</th>
+        <th>Category</th>
+        <th>Price</th>
+        <th>Quantity</th>
+        <th>Sub Total</th>
+    </tr>
+    
+    <!-- Dynamically populated cart items -->
+    <%= cartItemsHtml.toString() %>
+</table>
+
+<h3>Total: <%= totalAmount %></h3>
+
+<!-- Buttons -->
+<a href="continueShopping.jsp"><button class="button left-button">Continue Shopping</button></a>
+<a onclick="window.print();"><button class="button right-button">Print</button></a>
+<br><br><br><br>
+
+</body>
+</html>

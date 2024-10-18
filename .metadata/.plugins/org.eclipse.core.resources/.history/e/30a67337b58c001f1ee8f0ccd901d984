@@ -1,0 +1,67 @@
+<%@include file="changeDetailsHeader.jsp"%>
+<%@ page import="java.sql.*" %>
+<%@ page import="com.digimart.project.ConnectionProvider" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <link rel="stylesheet" href="css/changeDetails.css">
+    <title>Change Details</title>
+    <style>
+        hr {
+            width: 70%;
+        }
+    </style>
+</head>
+<body>
+
+<%
+    // Initialize session and user ID
+    
+    Integer userId = (Integer) session.getAttribute("user_id");
+
+    // Check if user ID is null (not logged in)
+    if (userId == null) {
+        response.sendRedirect("login.jsp");
+        return;
+    }
+
+    // Fetch user details from the database
+    String query = "SELECT name, email, phone, security_question FROM users WHERE user_id = ?";
+    try (Connection con = ConnectionProvider.getCon();
+         PreparedStatement stmt = con.prepareStatement(query)) {
+        
+        stmt.setInt(1, userId); // Set the user ID in the query
+        ResultSet rs = stmt.executeQuery();
+
+        if (rs.next()) {
+            String name = rs.getString("name");
+            String email = rs.getString("email");
+            String mobileNumber = rs.getString("mobile_number");
+            String securityQuestion = rs.getString("security_question");
+%>
+            <h3>Name: <%= name %></h3>
+            <hr>
+            <h3>Email: <%= email %></h3>
+            <hr>
+            <h3>Mobile Number: <%= mobileNumber %></h3>
+            <hr>
+            <h3>Security Question: <%= securityQuestion %></h3>
+            <hr>
+<%
+        } else {
+%>
+            <h3>No user found.</h3>
+<%
+        }
+    } catch (SQLException e) {
+        e.printStackTrace();
+        out.println("<h3>Error fetching user details.</h3>");
+    }
+%>
+<br>
+<br>
+<br>
+
+</body>
+<%@include file="footer.jsp"%>
+</html>

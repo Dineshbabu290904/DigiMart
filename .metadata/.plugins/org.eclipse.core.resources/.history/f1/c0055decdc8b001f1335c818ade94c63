@@ -1,0 +1,17 @@
+<head>
+	<style>
+	.footer {
+            background: linear-gradient(135deg, #4caf50, #b2ebf2, #ffccbc); /* Green to Light Blue to Light Pink */
+            color: #4a148c; /* Dark purple for a vibrant yet elegant touch */
+            text-align: center; /* Center text */
+            padding: 20px; /* Padding around footer */
+            margin-top: auto; /* Push footer to the bottom */
+            width: 100%; /* Full width */
+        }
+    </style>
+</head>>
+<body>
+<div class="footer">
+    <p>All Rights Reserved &copy; CodeLife</p>
+</div>
+</body>

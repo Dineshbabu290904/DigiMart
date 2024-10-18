@@ -1,0 +1,27 @@
+package com.shopping.project;
+import java.sql.*;
+import java.sql.Timestamp;
+
+import com.shopping.project.*;
+import com.shop.model.Product;
+
+public class ProductDAO {
+    private static final String INSERT_PRODUCT_SQL = "INSERT INTO Products (user_id, name, description, category, price_per_unit, unit, available_qty, date_listed, image, status) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)";
+
+    public void insertProduct(Product product) throws SQLException {
+        try (Connection con = ConnectionProvider.getCon();
+             PreparedStatement ps = con.prepareStatement(INSERT_PRODUCT_SQL)) {
+            ps.setInt(1, product.getUserId());
+            ps.setString(2, product.getName());
+            ps.setString(3, product.getDescription());
+            ps.setString(4, product.getCategory());
+            ps.setDouble(5, product.getPricePerUnit());
+            ps.setString(6, product.getUnit());
+            ps.setDouble(7, product.getAvailableQty());
+            ps.setTimestamp(8, new Timestamp(product.getDateListed().getTime()));
+            ps.setBytes(9, product.getImage());
+            ps.setString(10, product.getStatus());
+            ps.executeUpdate();
+        }
+    }
+}

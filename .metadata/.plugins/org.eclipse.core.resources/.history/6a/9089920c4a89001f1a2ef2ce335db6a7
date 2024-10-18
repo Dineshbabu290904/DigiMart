@@ -1,0 +1,39 @@
+<%@ page import="com.shopping.project.ConnectionProvider" %>
+<%@ page import="java.sql.*" %>
+
+<%
+    String id = request.getParameter("id");
+    String name = request.getParameter("name");
+    String category = request.getParameter("category");
+    String description = request.getParameter("description");
+    String price = request.getParameter("price");
+    String unit = request.getParameter("unit");
+    String available_qty = request.getParameter("available_qty");
+    String status = request.getParameter("status");
+
+    if (name == null || name.trim().isEmpty() || category == null || category.trim().isEmpty() || description == null || description.trim().isEmpty() || price == null || price.trim().isEmpty() || unit == null || unit.trim().isEmpty() || available_qty == null || available_qty.trim().isEmpty() || status == null || status.trim().isEmpty()) {
+        response.sendRedirect("AddNewProduct.jsp?msg=invalid");
+        return;
+    }
+
+    try {
+        Connection con = ConnectionProvider.getCon();
+        PreparedStatement P = con.prepareStatement("INSERT INTO Products (name, category, price_per_unit, available_qty, description, unit, status) VALUES (?, ?, ?, ?, ?, ?, ?)");
+        P.setString(1, name);
+        P.setString(2, category);
+        P.setDouble(3, Double.parseDouble(price));
+        P.setInt(4, Integer.parseInt(available_qty));
+        P.setString(5, description);
+        P.setString(6, unit);
+        P.setString(7, status);
+
+        P.executeUpdate();
+        con.close();
+
+        response.sendRedirect("addNewProduct.jsp?msg=done");
+    } catch (Exception e) {
+        e.printStackTrace();
+        System.out.println("Error: " + e.getMessage());
+        response.sendRedirect("addNewProduct.jsp?msg=invalid");
+    }
+%>

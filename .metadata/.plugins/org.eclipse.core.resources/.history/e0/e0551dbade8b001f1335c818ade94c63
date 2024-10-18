@@ -1,0 +1,173 @@
+<%@ page import="com.digimart.project.ConnectionProvider" %>
+<%@ page import="java.math.BigDecimal" %>
+<%@ page import="java.sql.*" %>
+<%@ page import="java.util.Base64" %>
+<%@ page contentType="text/html;charset=UTF-8" language="java" %>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/css/bootstrap.min.css">
+    <link rel="stylesheet" href="../css/addNewProduct-style.css">
+    <title>Edit Product</title>
+    <style>
+        body {
+            background: linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%); /* Light green gradient */
+            font-family: Arial, sans-serif;
+            color: #333; /* Dark text color for contrast */
+        }
+        .back {
+            color: #E0FFFF;
+            margin-left: 2.5%;
+            text-decoration: none;
+            font-size: 1.2em;
+        }
+        .card {
+            margin: 20px; /* Space between cards */
+            background-color: rgba(255, 255, 255, 0.9); /* Slightly transparent white for cards */
+            border-radius: 15px; /* Rounded corners for cards */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Subtle shadow for depth */
+        }
+        .input-style {
+            border-radius: 25px;
+            background-color: #e0f7fa; /* Light cyan background */
+            border: 1px solid #ccc;
+            padding: 10px;
+            width: 100%;
+        }
+        button {
+            background-color: #4caf50; /* Green background */
+            color: white; /* White text */
+            border: none; /* No border */
+            padding: 10px 20px; /* Padding */
+            font-size: 16px; /* Font size */
+            cursor: pointer; /* Pointer cursor on hover */
+            border-radius: 25px; /* Rounded corners */
+            transition: background-color 0.3s; /* Smooth background transition */
+        }
+        button:hover {
+            background-color: #388e3c; /* Darker green on hover */
+        }
+        h3.card-title {
+            color: #2c6fbb; /* Cool blue for headings */
+            text-shadow: 1px 1px 4px rgba(0, 0, 0, 0.5); /* Subtle shadow for depth */
+        }
+    </style>
+</head>
+<body>
+
+    <h2><a class="back" href="allProductEditProduct.jsp"><i class='fas fa-arrow-circle-left'></i> Back</a></h2>
+
+    <%
+        String productId = request.getParameter("product_id"); // Retrieve product ID from the request
+        if (productId != null) {
+            try {
+                Connection con = ConnectionProvider.getCon(); // Get database connection
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM PRODUCTS WHERE product_id = ?");
+                ps.setInt(1, Integer.parseInt(productId)); // Set product ID in query
+                ResultSet rs = ps.executeQuery(); // Execute query
+
+                if (rs.next()) { // If product exists
+                    // Retrieve product details from the result set
+                    int userId = rs.getInt("user_id");
+                    String name = rs.getString("name");
+                    String description = rs.getString("description");
+                    String category = rs.getString("category");
+                    BigDecimal pricePerUnit = rs.getBigDecimal("price_per_unit");
+                    String unit = rs.getString("unit");
+                    BigDecimal availableQty = rs.getBigDecimal("available_qty");
+                    String status = rs.getString("status");
+    %>
+
+    <!-- Product Edit Form in a Card Layout -->
+    <form action="UpdateProductServlet" method="post" enctype="multipart/form-data">
+        <input type="hidden" name="product_id" value="<%= productId %>"> <!-- Hidden field for product ID -->
+
+        <div class="container">
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">User ID</h3>
+                            <input class="input-style" type="number" name="user_id" value="<%= userId %>" required />
+                            <hr>
+                            
+                            <h3 class="card-title">Name</h3>
+                            <input class="input-style" type="text" name="name" value="<%= name %>" required />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Category</h3>
+                            <input class="input-style" type="text" name="category" value="<%= category %>" required />
+                            <hr>
+
+                            <h3 class="card-title">Price per Unit</h3>
+                            <input class="input-style" type="number" name="price_per_unit" value="<%= pricePerUnit %>" required step="0.01" />
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Description</h3>
+                            <textarea class="input-style" name="description" required><%= description %></textarea>
+                            <hr>
+                            <h3 class="card-title">Status</h3>
+                            <select class="input-style" name="status" required>
+                                <option value="Available" <%= status.equals("Available") ? "selected" : "" %>>Available</option>
+                                <option value="Out of Stock" <%= status.equals("Out of Stock") ? "selected" : "" %>>Out of Stock</option>
+                            </select>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="col-md-6">
+                    <div class="card">
+                        <div class="card-body">
+                            <h3 class="card-title">Unit</h3>
+                            <input class="input-style" type="text" name="unit" value="<%= unit %>" required />
+                            <hr>
+
+                            <h3 class="card-title">Available Quantity</h3>
+                            <input class="input-style" type="number" name="available_qty" value="<%= availableQty %>" required />  
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="text-align: center; margin-top: 20px;">
+                <button type="submit" name="update">Update Product</button>
+            </div>
+        </div>
+    </form>
+
+    <%
+                } else {
+                    out.println("<h3 style='color:red;'>Product not found!</h3>");
+                }
+            } catch (SQLException e) {
+                e.printStackTrace();
+                out.println("<h3 style='color:red;'>Error fetching product data!</h3>");
+            } catch (Exception e) {
+                e.printStackTrace();
+                out.println("<h3 style='color:red;'>An unexpected error occurred!</h3>");
+            }
+        } else {
+            out.println("<h3 style='color:red;'>Invalid Product ID!</h3>");
+        }
+    %>
+
+    <!-- Bootstrap JS and dependencies -->
+    <script src="https://code.jquery.com/jquery-3.5.1.slim.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/@popperjs/core@2.5.3/dist/umd/popper.min.js"></script>
+    <script src="https://stackpath.bootstrapcdn.com/bootstrap/4.5.2/js/bootstrap.min.js"></script>
+
+</body>
+</html>

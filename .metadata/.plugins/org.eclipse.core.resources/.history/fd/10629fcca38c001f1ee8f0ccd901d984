@@ -1,0 +1,149 @@
+package com.digimart.Servlet;
+
+
+import javax.servlet.ServletException;
+import javax.servlet.annotation.WebServlet;
+import javax.servlet.http.HttpServlet;
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpServletResponse;
+import javax.servlet.http.HttpSession;
+
+import com.digimart.project.ConnectionProvider;
+
+import java.io.IOException;
+import java.io.PrintWriter;
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.sql.SQLException;
+
+@WebServlet("/AddressPaymentForOrderServlet")
+public class AddressPaymentForOrderServlet extends HttpServlet {
+    /**
+	 * 
+	 */
+	private static final long serialVersionUID = 1L;
+
+	protected void doPost(HttpServletRequest request, HttpServletResponse response) 
+            throws ServletException, IOException {
+        HttpSession session = request.getSession();
+        Integer userId = (Integer) session.getAttribute("user_id");
+        String email = (String) session.getAttribute("email"); // Retrieve user email from session
+        String fullName = request.getParameter("Fullname");
+        String mobileNumber = request.getParameter("mobile");
+        String address = request.getParameter("address");
+        String city = request.getParameter("city");
+        String state = request.getParameter("state");
+        String postalCode = request.getParameter("postalCode");
+        String country = request.getParameter("country");
+        boolean isDefault = true; // Set this as true if this is the default address
+
+        response.setContentType("text/html");
+        PrintWriter out = response.getWriter();
+
+        if (userId == null) {
+            response.sendRedirect("login.jsp"); // Redirect to login if user_id is null
+            return;
+        }
+
+        try (Connection con = ConnectionProvider.getCon()) {
+            // Check if a default address already exists
+            PreparedStatement checkAddressStmt = con.prepareStatement(
+                "SELECT address_id FROM address WHERE user_id = ? AND is_default = TRUE"
+            );
+            checkAddressStmt.setInt(1, userId);
+            ResultSet rs = checkAddressStmt.executeQuery();
+
+            if (rs.next()) {
+                // If a default address exists, update it
+                String sqlUpdate = "UPDATE address SET full_name = ?, phone_number = ?, street_address = ?, " +
+                                   "city = ?, state = ?, postal_code = ?, country = ? " +
+                                   "WHERE user_id = ? AND is_default = TRUE";
+                try (PreparedStatement updateStmt = con.prepareStatement(sqlUpdate)) {
+                    updateStmt.setString(1, fullName);
+                    updateStmt.setString(2, mobileNumber);
+                    updateStmt.setString(3, address);
+                    updateStmt.setString(4, city);
+                    updateStmt.setString(5, state);
+                    updateStmt.setString(6, postalCode);
+                    updateStmt.setString(7, country);
+                    updateStmt.setInt(8, userId);
+                    int rowsUpdated = updateStmt.executeUpdate();
+
+                    if (rowsUpdated > 0) {
+                        out.println("<h3>Default address updated successfully!</h3>");
+                        session.setAttribute("address_id", rs.getInt("address_id")); // Set address_id in session
+                    } else {
+                        out.println("<h3>Error: Default address not updated. Please try again.</h3>");
+                    }
+                }
+            } else {
+                // No default address found, create a new one
+                String sqlInsert = "INSERT INTO address (user_id, full_name, phone_number, street_address, " +
+                                   "city, state, postal_code, country, is_default) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+                try (PreparedStatement insertStmt = con.prepareStatement(sqlInsert)) {
+                    insertStmt.setInt(1, userId);
+                    insertStmt.setString(2, fullName);
+                    insertStmt.setString(3, mobileNumber);
+                    insertStmt.setString(4, address);
+                    insertStmt.setString(5, city);
+                    insertStmt.setString(6, state);
+                    insertStmt.setString(7, postalCode);
+                    insertStmt.setString(8, country);
+                    insertStmt.setBoolean(9, isDefault);
+                    int rowsInserted = insertStmt.executeUpdate();
+
+                    if (rowsInserted > 0) {
+                        out.println("<h3>Address added successfully and set as default!</h3>");
+                        
+                        // Retrieve the newly created address_id
+                        try (PreparedStatement addressIdStmt = con.prepareStatement(
+                            "SELECT address_id FROM address WHERE user_id = ? AND is_default = TRUE ORDER BY address_id DESC LIMIT 1"
+                        )) {
+                            addressIdStmt.setInt(1, userId);
+                            ResultSet idRs = addressIdStmt.executeQuery();
+                            if (idRs.next()) {
+                                int addressId = idRs.getInt("address_id");
+                                session.setAttribute("address_id", addressId); // Set address_id in session
+                            }
+                        }
+                    } else {
+                        out.println("<h3>Error: Address not added. Please try again.</h3>");
+                    }
+                }
+            }
+
+            // Update delivery date based on orders
+            String updateDeliveryDateSQL = 
+                "UPDATE address a " +
+                "JOIN orders o ON a.user_id = o.user_id " +
+                "SET a.delivery_date = DATE_ADD(o.order_date, INTERVAL 7 DAY) " +
+                "WHERE a.delivery_date IS NULL AND a.user_id = ?";
+            try (PreparedStatement updateDeliveryStmt = con.prepareStatement(updateDeliveryDateSQL)) {
+                updateDeliveryStmt.setInt(1, userId);
+                int rowsDeliveryUpdated = updateDeliveryStmt.executeUpdate();
+
+                if (rowsDeliveryUpdated > 0) {
+                    out.println("<h3>Delivery dates updated successfully!</h3>");
+                } else {
+                    out.println("<h3>No delivery dates updated (they may already be set).</h3>");
+                }
+            }
+
+            // If update is successful, redirect to billing page
+            response.sendRedirect("bill.jsp");
+
+        } catch (SQLException e) {
+            e.printStackTrace();
+            out.println("<h3>An error occurred while updating your address.</h3>");
+        } finally {
+            out.close();
+        }
+    }
+
+	protected void doGet(HttpServletRequest request, HttpServletResponse response) throws ServletException, IOException {
+		// TODO Auto-generated method stub
+		doPost(request, response);
+	}
+
+}

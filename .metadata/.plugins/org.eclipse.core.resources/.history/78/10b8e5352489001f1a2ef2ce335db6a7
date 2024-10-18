@@ -1,0 +1,66 @@
+<%@page import="com.shopping.project.ConnectionProvider"%>
+<%@page import="java.sql.*"%>
+<%@include file="adminHeader.jsp"%>
+
+<html>
+<head>
+    <link rel="stylesheet" href="../css/addNewProduct-style.css">
+    <title>Add New Product</title>
+</head>
+<body>
+
+<%
+int id = 1; // Default product ID
+String message = request.getParameter("msg"); // Get message parameter from the request
+try {
+    Connection con = ConnectionProvider.getCon();
+    Statement S = con.createStatement();
+    ResultSet R = S.executeQuery("SELECT MAX(product_id) FROM Products");
+    if (R.next()) {
+        id = R.getInt(1) + 1; // Get the next product ID
+    }
+} catch (Exception e) {
+    e.printStackTrace();
+    System.out.println("Error: " + e.getMessage());
+}
+%>
+
+<% if (message != null) { %>
+    <h3 class="alert" style="color: <%=(message.equals("done") ? "green" : "red")%>;">
+        <% if (message.equals("done")) { %>
+            Product Added Successfully!
+        <% } else { %>
+            Something went wrong! Try Again!
+        <% } %>
+    </h3>
+<% } %>
+
+<h3 style="color: yellow;">Product ID: <% out.println(id); %></h3>
+<form action="addNewProductAction.jsp" method="post" enctype="multipart/form-data">
+    <label>Product Name:</label>
+    <input type="text" name="name" required><br>
+
+    <label>Category:</label>
+    <input type="text" name="category" required><br>
+
+    <label>Price:</label>
+    <input type="number" name="price" required><br>
+
+    <label>Available Quantity:</label>
+    <input type="number" name="available_qty" required><br>
+
+    <label>Description:</label>
+    <textarea name="description" required></textarea><br>
+
+    <label>Unit:</label>
+    <input type="text" name="unit" required><br>
+
+    <label>Upload Image:</label>
+    <input type="file" name="image" accept="image/*" required><br>
+
+    <input type="submit" value="Add Product">
+</form>
+
+
+</body>
+</html>

@@ -1,0 +1,98 @@
+<%@ page import="java.sql.*" %>
+<%@ page import="com.digimart.project.ConnectionProvider" %>
+<%@ include file="header.jsp" %>
+<%
+    // Initialize variables for user details and orders
+    Integer userId = (Integer) session.getAttribute("user_id");
+    
+    if (userId == null) {
+        response.sendRedirect("login.jsp"); // Redirect to login if user_id is null
+        return;
+    }
+
+    // Prepare SQL queries to fetch order details
+    String ordersQuery = "SELECT c.quantity, c.product_id, c.order_date, p.product_name, p.category, p.price, a.street_address, a.city, a.state, a.country, a.postal_code " +
+                         "FROM cart c " +
+                         "JOIN products p ON c.product_id = p.product_id " +
+                         "JOIN address a ON c.user_id = a.user_id " +
+                         "WHERE c.user_id = ?";
+
+    try (Connection con = ConnectionProvider.getCon();
+         PreparedStatement ordersStmt = con.prepareStatement(ordersQuery)) {
+        ordersStmt.setInt(1, userId);
+        ResultSet ordersRs = ordersStmt.executeQuery();
+%>
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <title>My Orders</title>
+    <style>
+        body { background-color: #333; color: white; }
+        table { width: 100%; border-collapse: collapse; }
+        th, td { padding: 10px; text-align: center; }
+        th { background-color: #444; }
+        tr:nth-child(even) { background-color: #555; }
+    </style>
+</head>
+<body>
+<div style="text-align: center; font-size: 30px;">My Orders <i class='fab fa-elementor'></i></div>
+<table>
+    <thead>
+        <tr>
+            <th scope="col">S.No</th>
+            <th scope="col">Product Name</th>
+            <th scope="col">Category</th>
+            <th scope="col"><i class="fa fa-inr"></i> Price</th>
+            <th scope="col">Quantity</th>
+            <th scope="col"><i class="fa fa-inr"></i> Sub Total</th>
+            <th scope="col">Order Date</th>
+            <th scope="col">Expected Delivery Date</th>
+            <th scope="col">Payment Method</th>
+            <th scope="col">Status</th>
+        </tr>
+    </thead>
+    <tbody>
+        <%
+            int serialNo = 1;
+            while (ordersRs.next()) {
+                String productName = ordersRs.getString("product_name");
+                String category = ordersRs.getString("category");
+                double price = ordersRs.getDouble("price");
+                int quantity = ordersRs.getInt("quantity");
+                double subTotal = price * quantity;
+                Date orderDate = ordersRs.getDate("order_date");
+                Date expectedDeliveryDate = new Date(orderDate.getTime() + (7 * 24 * 60 * 60 * 1000)); // 7 days delivery
+                String paymentMethod = "Cash on Delivery"; // Assuming this is the payment method
+                String status = "Processing"; // Assuming a default status
+
+        %>
+        <tr>
+            <td><%= serialNo++ %></td>
+            <td><%= productName %></td>
+            <td><%= category %></td>
+            <td><i class="fa fa-inr"></i> <%= price %></td>
+            <td><%= quantity %></td>
+            <td><i class="fa fa-inr"></i> <%= subTotal %></td>
+            <td><%= orderDate %></td>
+            <td><%= expectedDeliveryDate %></td>
+            <td><%= paymentMethod %></td>
+            <td><%= status %></td>
+        </tr>
+        <%
+            }
+        %>
+    </tbody>
+</table>
+<br><br><br>
+</body>
+</html>
+
+<%
+    } catch (SQLException e) {
+        e.printStackTrace();
+        out.println("<h3>An error occurred while retrieving your orders.</h3>");
+    }
+%>

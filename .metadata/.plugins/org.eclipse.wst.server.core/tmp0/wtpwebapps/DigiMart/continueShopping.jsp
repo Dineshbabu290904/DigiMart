@@ -1,0 +1,17 @@
+<%@ page import="java.sql.*" %>
+<%@ page import="com.digimart.project.ConnectionProvider" %>
+
+<% 
+Integer userId = (Integer) session.getAttribute("user_id");
+String status = "processing";
+try{
+	Connection con = ConnectionProvider.getCon();
+	PreparedStatement P = con.prepareStatement("update cart set status = ? where user_id=? and status='bill'");
+	P.setString(1,status);
+	P.setInt(2,userId);
+	P.executeUpdate();
+	response.sendRedirect("home.jsp");
+}catch(Exception e){
+	System.out.println(e);
+}
+%>

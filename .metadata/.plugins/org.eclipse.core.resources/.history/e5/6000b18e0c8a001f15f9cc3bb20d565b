@@ -1,0 +1,65 @@
+<%@ page import="com.digimart.project.ConnectionProvider" %>
+<%@ page import="java.sql.*" %>
+<%@ include file="adminHeader.jsp" %>
+<%@ include file="../footer.jsp" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=ISO-8859-1">
+<title>Home</title>
+<style>
+h3
+{
+	color: yellow;
+	text-align: center;
+}
+</style>
+</head>
+<body>
+<div style="color: white; text-align: center; font-size: 30px;">All Products & Edit Products <i class='fab fa-elementor'></i></div>
+<%String msg = request.getParameter("msg"); %>
+<% if (msg != null) { %>
+    <h3 class="alert" style="color: <%=(msg.equals("done") ? "green" : "red")%>;">
+        <% if (msg.equals("done")) { %>
+            Product Added Successfully!
+        <% } else { %>
+            Something went wrong! Try Again!
+        <% } %>
+    </h3>
+<% } %>
+
+<table>
+        <thead>
+          <tr>
+            <th scope="col">ID</th>
+            <th scope="col">Name</th>
+            <th scope="col">Category</th>
+            <th scope="col"><i class="fa fa-inr"></i> Price</th>
+            <th>Status</th>
+            <th scope="col">Edit <i class='fas fa-pen-fancy'></i></th>
+          </tr>
+        </thead>
+        <tbody>
+       <%try{
+    	   Connection con = ConnectionProvider.getCon();
+    	   Statement S = con.createStatement();
+    	   ResultSet R = S.executeQuery("SELECT * FROM PRODUCTS");
+    	   while(R.next()){
+        %>
+          <tr>
+            <td><%R.getString(1); %></td>
+            <td><%R.getString(3);%></td>
+            <td><%R.getString(5); %></td>
+            <td><%R.getString(6); %><i class="fa fa-inr"></i> </i></td>
+            <td><%R.getString(11); %></td>
+            <td><a href="">Edit <i class='fas fa-pen-fancy'></i></a></td>
+          </tr>
+        <%} } %>
+        </tbody>
+      </table>
+      <br>
+      <br>
+      <br>
+
+</body>
+</html>

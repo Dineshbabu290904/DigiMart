@@ -1,0 +1,167 @@
+<%@ page import="com.digimart.project.ConnectionProvider" %>
+<%@ page import="java.sql.*" %>
+<%@ page import="java.util.Base64" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN" "http://www.w3.org/TR/html4/loose.dtd">
+<html>
+<head>
+    <link rel="stylesheet" href="css/addressPaymentForOrder-style.css">
+    <script src='https://kit.fontawesome.com/a076d05399.js'></script>
+    <title>Checkout</title>
+    <style>
+        .body {
+            background: linear-gradient(135deg, #96e6a1 0%, #d4fc79 100%); /* Light green gradient */
+            min-height: 100vh;
+        }
+	</style>
+</head>
+<body>
+    <br>
+    <%
+        Integer userId = (Integer) session.getAttribute("user_id"); // Expecting user_id as an Integer
+		
+        if (userId == null) {
+            response.sendRedirect("login.jsp"); // Redirect to login if user_id is null
+            return;
+        }
+
+        double totalParam = (double) session.getAttribute("total");
+        //System.out.println(totalParam);
+        
+
+        try {
+            Connection con = ConnectionProvider.getCon();
+            
+            PreparedStatement ps = con.prepareStatement(
+                "SELECT p.product_id, p.name, p.category, p.price_per_unit, c.quantity, c.price " +
+                "FROM cart c JOIN products p ON c.product_id = p.product_id " +
+                "WHERE c.user_id = ? AND c.status = 'active'"
+            );
+            ps.setInt(1, userId); // Set the user ID as an integer
+            ResultSet rs = ps.executeQuery();
+
+            if (!rs.isBeforeFirst()) {
+    %>
+                <h3 class="alert">Your cart is empty!</h3>
+    <%
+            } else {
+    %>
+                <table>
+                    <thead>
+                        <tr>
+                            <th scope="col"><a href="myCart.jsp"><i class='fas fa-arrow-circle-left'></i> Back</a></th>
+                            <th scope="col" style="background-color: yellow;">Total: <i class="fa fa-inr"></i> <%= totalParam %></th>
+                        </tr>
+                    </thead>
+                    <thead>
+                        <tr>
+                            <th scope="col">S.No</th>
+                            <th scope="col">Product Name</th>
+                            <th scope="col">Category</th>
+                            <th scope="col"><i class="fa fa-inr"></i> Price</th>
+                            <th scope="col">Quantity</th>
+                            <th scope="col">Sub Total</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+    <%
+                int sNo = 1;
+                while (rs.next()) {
+                    String productName = rs.getString("name");
+                    String category = rs.getString("category");
+                    double price = rs.getBigDecimal("price_per_unit").doubleValue();
+                    int quantity = rs.getInt("quantity");
+                    double subTotal = price * quantity;
+                    
+    %>
+                        <tr>
+                            <td><%= sNo++ %></td>
+                            <td><%= productName %></td>
+                            <td><%= category %></td>
+                            <td><i class="fa fa-inr"></i> <%= price %></td>
+                            <td><%= quantity %></td>
+                            <td><i class="fa fa-inr"></i> <%= subTotal %></td>
+                        </tr>
+    <%
+                }
+    %>
+                    </tbody>
+                </table>
+    
+
+    <hr style="width: 100%">
+
+    <!-- Address Form -->
+    <form action="ConfirmOrderServlet" method="post">
+        <div class="left-div">
+            <h3>Enter Address</h3>
+            <input class="input-style" type="text" name="address" required placeholder="Enter your address" class="form-control">
+        </div>
+
+        <div class="right-div">
+            <h3>Enter City</h3>
+            <input class="input-style" type="text" name="city" required placeholder="Enter your city" class="form-control">
+        </div>
+
+        <div class="left-div">
+            <h3>Enter State</h3>
+            <input class="input-style" type="text" name="state" required placeholder="Enter your state" class="form-control">
+        </div>
+
+        <div class="right-div">
+            <h3>Enter Country</h3>
+            <input class="input-style" type="text" name="country" required placeholder="Enter your country" class="form-control">
+        </div>
+
+        <h3 style="color: red;">*If there is no address, it means you did not set your address!</h3>
+        <h3 style="color: red;">*This address will also be updated in your profile</h3>
+
+        <hr style="width: 100%">
+
+        <!-- Payment Options -->
+        <div class="left-div">
+            <h3>Select Way of Payment</h3>
+            <select name="payment_method" class="form-control">
+                <option value="cod">Cash on Delivery</option>
+                <option value="online">Online Payment</option>
+            </select>
+        </div>
+
+        <div class="input-style" class="right-div">
+            <h3>Pay Online to: <strong>btechdays@pay.com</strong></h3>
+            <h3 style="color: red;">*If you select online payment, enter your transaction ID here, otherwise leave it blank</h3>
+            <input type="text" name="transaction_id" placeholder="Enter Transaction ID" class="form-control">
+        </div>
+
+        <hr style="width: 100%">
+
+        <!-- Mobile Number -->
+        <div class="left-div">
+            <h3>Mobile Number</h3>
+            <input class="input-style" type="text" name="mobile" required placeholder="Enter your mobile number" class="form-control">
+            <h3 style="color: red;">*This mobile number will also be updated in your profile</h3>
+        </div>
+
+        <div class="right-div">
+            <h3 style="color: red;">*If you enter a wrong transaction ID, your order may be cancelled!</h3>
+            <i class='far fa-arrow-alt-circle-right'></i>
+            <h3 style="color: red;">*Fill the form correctly</h3>
+        </div>
+		<%
+            }
+        } catch (SQLException e) {
+            e.printStackTrace();
+        }
+    %>
+        <br><br>
+
+        <!-- Submit Button -->
+        <div style="text-align: center;">
+            <button type="submit" class="btn btn-primary">Place Order <i class='fas fa-arrow-right'></i></button>
+        </div>
+
+    </form>
+
+    <br><br><br>
+
+</body>
+</html>
