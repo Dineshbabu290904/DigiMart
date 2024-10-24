@@ -70,7 +70,7 @@ public class AddProductServlet extends HttpServlet {
             Connection con = ConnectionProvider.getCon();
 
             // SQL query to insert product details including image as BLOB and user_id
-            String query = "INSERT INTO Products (name, category, price_per_unit, available_qty, description, unit, status, image, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO products (name, category, price_per_unit, available_qty, description, unit, status, image, user_id) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement ps = con.prepareStatement(query);
 
             // Set parameters for the SQL query

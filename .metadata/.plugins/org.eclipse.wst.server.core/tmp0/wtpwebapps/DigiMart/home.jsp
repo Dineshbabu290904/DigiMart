@@ -128,7 +128,7 @@
         try {
             con = ConnectionProvider.getCon();
             stmt = con.createStatement();
-            rs = stmt.executeQuery("SELECT * FROM Products WHERE status ='Available'");
+            rs = stmt.executeQuery("SELECT * FROM products WHERE status ='Available'");
 
             while (rs.next()) {
     %>

@@ -12,10 +12,7 @@ INDEX VERSION 1.134+C:\Users\dines\Downloads\ShoppingCart\.metadata\.plugins\org
 586924194.index
 3517454654.index
 3257683605.index
-3490750861.index
-3435007717.index
 2826991502.index
-963175063.index
 2885203605.index
 1369570615.index
 443652929.index

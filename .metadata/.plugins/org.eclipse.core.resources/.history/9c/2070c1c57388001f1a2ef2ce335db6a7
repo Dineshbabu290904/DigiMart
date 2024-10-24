@@ -1,3 +1,0 @@
-<%@page import="com.shopping.project.ConnectionProvider"%>
-<%@page import="java.sql.*"%>
-

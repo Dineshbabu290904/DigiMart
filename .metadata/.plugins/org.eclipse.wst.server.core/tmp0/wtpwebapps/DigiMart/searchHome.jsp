@@ -81,7 +81,7 @@
                 con = ConnectionProvider.getCon();
 
                 // Use PreparedStatement to prevent SQL injection
-                String query = "SELECT * FROM PRODUCTS WHERE (name LIKE ? OR category LIKE ?) AND status='Available'";
+                String query = "SELECT * FROM products WHERE (name LIKE ? OR category LIKE ?) AND status='Available'";
                 pstmt = con.prepareStatement(query);
                 pstmt.setString(1, "%" + search + "%"); // Set the first parameter
                 pstmt.setString(2, "%" + search + "%"); // Set the second parameter

@@ -59,7 +59,7 @@
         if (productId != null) {
             try {
                 Connection con = ConnectionProvider.getCon();
-                PreparedStatement ps = con.prepareStatement("SELECT * FROM PRODUCTS WHERE product_id = ?");
+                PreparedStatement ps = con.prepareStatement("SELECT * FROM products WHERE product_id = ?");
                 ps.setInt(1, Integer.parseInt(productId));
                 ResultSet rs = ps.executeQuery();
 

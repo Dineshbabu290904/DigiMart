@@ -30,7 +30,7 @@ public class LoginServlet extends HttpServlet {
             // Database connection
             con = ConnectionProvider.getCon();
             // SQL query to authenticate user
-            String query = "SELECT * FROM Users WHERE username = ? AND password = ?";
+            String query = "SELECT * FROM users WHERE username = ? AND password = ?";
             ps = con.prepareStatement(query);
             ps.setString(1, username);
             ps.setString(2, password);

@@ -46,7 +46,7 @@ public class UpdateProductServlet extends HttpServlet {
 
         try (Connection con = ConnectionProvider.getCon()) {
             // Prepare SQL statement
-            String sql = "UPDATE PRODUCTS SET user_id = ?, name = ?, description = ?, category = ?, "
+            String sql = "UPDATE products SET user_id = ?, name = ?, description = ?, category = ?, "
                        + "price_per_unit = ?, unit = ?, available_qty = ?, status = ?";
 
             int paramIndex = 9; // Initialize parameter index

@@ -108,7 +108,7 @@
         try {
             Connection con = ConnectionProvider.getCon();
             Statement stmt = con.createStatement();
-            ResultSet rs = stmt.executeQuery("SELECT * FROM PRODUCTS");
+            ResultSet rs = stmt.executeQuery("SELECT * FROM products");
             while (rs.next()) {
     %>
     <div class="card">

@@ -31,7 +31,7 @@ public class SignupServlet extends HttpServlet {
             // Database connection
             Connection con = ConnectionProvider.getCon();
             // SQL query to insert the data
-            String query = "INSERT INTO Users (username, name, email, phone, user_type, password, securityQuestion, securityAnswer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
+            String query = "INSERT INTO users (username, name, email, phone, user_type, password, securityQuestion, securityAnswer) VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
             PreparedStatement pstmt = con.prepareStatement(query);
             pstmt.setString(1, username);
             pstmt.setString(2, name);

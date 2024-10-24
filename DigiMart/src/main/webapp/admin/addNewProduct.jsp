@@ -50,7 +50,7 @@
     try {
         Connection con = ConnectionProvider.getCon();
         Statement statement = con.createStatement();
-        ResultSet resultSet = statement.executeQuery("SELECT MAX(product_id) FROM Products");
+        ResultSet resultSet = statement.executeQuery("SELECT MAX(product_id) FROM products");
         if (resultSet.next()) {
             id = resultSet.getInt(1) + 1; // Get the next product ID
         }

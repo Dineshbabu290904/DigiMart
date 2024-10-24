@@ -91,7 +91,7 @@
 </head>
 <body>
 
-<h3>Online Shopping Bill (BTech Days)</h3>
+<h3>Digimart Bill</h3>
 <hr>
 
 <!-- Address Information -->

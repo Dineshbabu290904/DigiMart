@@ -48,11 +48,12 @@
     <h2>Change Product Photo</h2>
     <div class="form-container">
         <form action="ChangePhotoServlet" method="post" enctype="multipart/form-data">
-            <input type="hidden" name="product_id" value="<%= request.getParameter("product_id") %>"/>
+            <%String productId = request.getParameter("product_id"); %>
+            <input type="hidden" name="product_id" value="${request.getParameter("product_id")}"/>
 
             <% 
             // Get the product ID from the request
-            String productId = request.getParameter("product_id");
+            
             session.setAttribute("product_id", productId);
             String imageBase64 = null;
 
@@ -60,7 +61,7 @@
             if (productId != null) {
                 try {
                     Connection con = ConnectionProvider.getCon();
-                    PreparedStatement ps = con.prepareStatement("SELECT image FROM PRODUCTS WHERE product_id = ?");
+                    PreparedStatement ps = con.prepareStatement("SELECT image FROM products WHERE product_id = ?");
                     ps.setInt(1, Integer.parseInt(productId));
                     ResultSet rs = ps.executeQuery();
 
