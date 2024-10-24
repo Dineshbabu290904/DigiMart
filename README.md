@@ -85,5 +85,5 @@ For any inquiries or feedback, please contact:
 ---
 
 you can find Screenshots of project here.
-[Open PDF](https://github.com/Dineshbabu290904/DigiMart/blob/master/Capstone_Output.pdf)
+[Open PDF](https://github.com/Dineshbabu290904/DigiMart/blob/master/Capstone%20Output.pdf)
 
