@@ -80,7 +80,8 @@ We welcome contributions! Please fork this repository and create a pull request 
 
 ## **Contact**
 For any inquiries or feedback, please contact:  
-- **Project Maintainer**: Dinesh Babu Surapaneni 
+- **Project Maintainer and Backend Developer**: Dinesh Babu Surapaneni
+- **Frontend Developer**: Balusu Subhodh Kumar
 - **Email**: dinesh.surapaneni@outlook.com
 ---
 
